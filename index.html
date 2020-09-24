@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+    <style>
+        li{
+            height: 40px;
+            border-bottom: 1px solid #000;
+        }
+    </style>
+</head>
+<body style="height: 100vh;">
+    <div class="List">
+        <span class="sentinels">....</span>
+    </div>
+</body>
+
+<script>
+    function getDataList() {
+        let data = []
+        for (let i = 0; i < 10000; i++) {
+            data.push({
+                id: `item${i}`,
+                value: Math.random() * i
+            })
+        }
+        return data
+    }
+
+    function $(selector) {
+        return document.querySelector(selector)
+    }
+
+    function loadData(start, end) {
+        let sliceData = getDataList().slice(start, end)
+        let fragment = document.createDocumentFragment()
+        for (let i = 0; i < sliceData.length; i++) {
+            let li = document.createElement('li')
+            li.innerText = JSON.stringify(sliceData[i])
+            fragment.appendChild(li)
+        }
+        $('.List').insertBefore(fragment, $('.sentinels'))
+    }
+
+    let count = Math.ceil(document.body.clientHeight / 40);
+    console.log('count',document.body.clientHeight,  count)
+    let startIndex = 0;
+    let endIndex = 0;
+    let io = new IntersectionObserver(function(entries) {
+        loadData(startIndex, count)
+        // 标志位元素进入视口
+        if(entries[0].isIntersecting) {
+            // 更新列表数据起始和结束位置
+            startIndex = startIndex += count;
+            endIndex = startIndex + count;
+            if(endIndex >= getDataList().length) {
+                // 数据加载完取消观察
+                io.unobserve(entries[0].target)
+            }
+            // requestAnimationFrame 由系统决定回调函数的执行时机
+            requestAnimationFrame(() => {
+                loadData(startIndex, endIndex)
+            })
+        }
+    });
+    io.observe($('.sentinels'));
+
+</script>
+
+</html>
